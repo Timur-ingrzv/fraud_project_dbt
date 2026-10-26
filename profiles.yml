@@ -3,7 +3,12 @@ fraud_project_dbt:
 
   outputs:
     dev:
-      type: duckdb
-      path: 'fraud.duckdb'
-      schema: main
+      type: clickhouse
+      driver: http
+      host: localhost
+      port: 8123
+      user: default
+      password: "dev_password"
+      schema: dbt_analytics
+      secure: false
       threads: 4

@@ -1,37 +1,28 @@
 {{ config(
-    materialized='table'
+    materialized='table',
+    engine='MergeTree()',
+    order_by=['us_state']
 ) }}
 
-WITH transactions AS (
+WITH state_metrics AS (
     SELECT
-        state,
-        customer_key,
-        merchant_name,
-        amount,
-        is_fraud
+        us_state,
+        count() AS transaction_count,
+        sum(is_fraud) AS fraud_count,
+        uniqExact(customer_key) AS unique_customers,
+        uniqExact(merchant_name) AS unique_merchants,
+        sum(amount) AS total_amount,
+        sumIf(amount, is_fraud = 1)
+            AS fraud_amount
     FROM {{ ref('stg_transactions') }}
-),
-
-state_metrics AS (
-    SELECT
-        state,
-        COUNT(*) AS transaction_count,
-        SUM(is_fraud) AS fraud_count,
-        COUNT(DISTINCT customer_key)
-            AS unique_customers,
-        COUNT(DISTINCT merchant_name)
-            AS unique_merchants,
-        SUM(amount) AS total_amount,
-        COALESCE(
-            SUM(amount) FILTER (WHERE is_fraud = 1),
-            0
-        ) AS fraud_amount
-    FROM transactions
-    GROUP BY state
+    GROUP BY us_state
 )
 
 SELECT
     *,
-    ROUND(100.0 * fraud_count / NULLIF(transaction_count, 0), 2)
-        AS fraud_rate
+    round(
+        100.0 * fraud_count
+        / nullIf(transaction_count, 0),
+        2
+    ) AS fraud_rate
 FROM state_metrics

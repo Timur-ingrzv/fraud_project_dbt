@@ -18,7 +18,7 @@ models:
         data_tests:
           - not_null
 
-      - name: state
+      - name: us_state
         description: Штат
         data_tests:
           - not_null

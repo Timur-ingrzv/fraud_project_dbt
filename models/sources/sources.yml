@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+  - name: transactions_db
+    schema: transactions_db
+    description: Банковские транзакции
+
+    tables:
+      - name: transactions
+        description: >
+          Таблица транзакций, загруженная из
+          файла train_short.csv.
+
+        columns:
+          - name: transaction_time
+            description: Время операции
+            data_tests:
+              - not_null
+
+          - name: amount
+            description: Сумма транзакции
+
+          - name: target
+            description: Признак фрода (0/1)
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: [0, 1]
+                    quote: false

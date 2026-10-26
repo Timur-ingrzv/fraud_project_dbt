@@ -1,28 +1,18 @@
 {{ config(
-    materialized='table'
+    materialized='table',
+    engine='MergeTree()',
+    order_by=['day_of_week', 'transaction_hour']
 ) }}
 
-WITH transactions AS (
+WITH hourly_metrics AS (
     SELECT
         day_of_week,
         transaction_hour,
-        amount,
-        is_fraud
+        count() AS transaction_count,
+        sum(is_fraud) AS fraud_count,
+        sum(amount) AS total_amount,
+        sumIf(amount, is_fraud = 1) AS fraud_amount
     FROM {{ ref('stg_transactions') }}
-),
-
-hourly_metrics AS (
-    SELECT
-        day_of_week,
-        transaction_hour,
-        COUNT(*) AS transaction_count,
-        SUM(is_fraud) AS fraud_count,
-        SUM(amount) AS total_amount,
-        COALESCE(
-            SUM(amount) FILTER (WHERE is_fraud = 1),
-            0
-        ) AS fraud_amount
-    FROM transactions
     GROUP BY
         day_of_week,
         transaction_hour
@@ -30,6 +20,9 @@ hourly_metrics AS (
 
 SELECT
     *,
-    ROUND(100.0 * fraud_count / NULLIF(transaction_count, 0), 2)
-        AS fraud_rate
+    round(
+        100.0 * fraud_count
+        / nullIf(transaction_count, 0),
+        2
+    ) AS fraud_rate
 FROM hourly_metrics

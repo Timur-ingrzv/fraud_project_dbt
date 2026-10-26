@@ -10,13 +10,13 @@ models:
           arguments:
             combination_of_columns:
               - transaction_date
-              - state
+              - us_state
     columns:
       - name: transaction_date
         data_tests:
           - not_null
 
-      - name: state
+      - name: us_state
         data_tests:
           - not_null
 
@@ -52,7 +52,7 @@ models:
   - name: mart_fraud_by_state
     description: Географическая статистика мошенничества
     columns:
-      - name: state
+      - name: us_state
         data_tests:
           - not_null
           - unique
