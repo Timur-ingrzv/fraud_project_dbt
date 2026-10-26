@@ -1,0 +1,11 @@
+repos:
+  - repo: local
+    hooks:
+      - id: sqlfluff-lint
+        name: SQLFluff lint for dbt
+        entry: sqlfluff lint
+        language: system
+        types: [sql]
+        files: ^models/.*\.sql$
+        pass_filenames: true
+        require_serial: true

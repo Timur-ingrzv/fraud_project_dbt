@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: stg_transactions
+
+    description: >
+      Подготовленные банковские транзакции.
+      Нормализованы и приведены типы, добавлены вычисляемые поля.
+
+    columns:
+      - name: transaction_timestamp
+        description: Время транзакции
+        data_tests:
+          - not_null
+
+      - name: amount
+        description: Сумма транзакции
+        data_tests:
+          - not_null
+
+      - name: state
+        description: Штат
+        data_tests:
+          - not_null
+
+      - name: is_fraud
+        description: Признак мошенничества
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+      - name: amount_segment
+        description: Категория суммы транзакции
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - UNKNOWN
+                  - INVALID
+                  - LOW
+                  - MEDIUM
+                  - HIGH
+                  - VERY_HIGH

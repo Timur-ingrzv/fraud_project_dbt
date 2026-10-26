@@ -1,0 +1,21 @@
+name: 'fraud_project_dbt'
+version: '1.0.0'
+config-version: 2
+
+profile: 'fraud_project_dbt'
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+models:
+  fraud_project:
+    raw:
+      +materialized: view
+
+    staging:
+      +materialized: view
+
+    marts:
+      +materialized: table

@@ -1,0 +1,9 @@
+fraud_project_dbt:
+  target: dev
+
+  outputs:
+    dev:
+      type: duckdb
+      path: 'fraud.duckdb'
+      schema: main
+      threads: 4

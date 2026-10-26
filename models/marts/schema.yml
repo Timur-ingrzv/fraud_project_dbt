@@ -1,0 +1,116 @@
+version: 2
+
+models:
+  - name: mart_daily_state_metrics
+    description: >
+      Дневные показатели активности
+      с группировкой по дате и штату.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - transaction_date
+              - state
+    columns:
+      - name: transaction_date
+        data_tests:
+          - not_null
+
+      - name: state
+        data_tests:
+          - not_null
+
+      - name: transaction_count
+        data_tests:
+          - not_null
+
+  - name: mart_fraud_by_category
+    description: Анализ фрода по категориям транзакций.
+    columns:
+      - name: category
+        data_tests:
+          - not_null
+          - unique
+
+      - name: transaction_count
+        data_tests:
+          - not_null
+
+      - name: fraud_count
+        data_tests:
+          - not_null
+
+      - name: fraud_rate
+        data_tests:
+          - not_null
+
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                max_value: 100
+
+  - name: mart_fraud_by_state
+    description: Географическая статистика мошенничества
+    columns:
+      - name: state
+        data_tests:
+          - not_null
+          - unique
+
+      - name: fraud_rate
+        data_tests:
+          - not_null
+  
+  - name: mart_customer_risk_profile
+    description: Исторический профиль риска клиента
+    columns:
+      - name: customer_key
+        data_tests:
+          - not_null
+          - unique
+
+      - name: risk_level
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['HIGH', 'MEDIUM', 'LOW']
+
+  - name: mart_hourly_fraud_pattern
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - day_of_week
+              - transaction_hour
+    description: Временные паттерны мошенничества
+    columns:
+      - name: day_of_week
+        data_tests:
+          - not_null
+
+      - name: transaction_hour
+        data_tests:
+          - not_null
+
+      - name: fraud_rate
+        data_tests:
+          - not_null
+
+  - name: mart_merchant_analytics
+    description: Аналитика транзакций по мерчантам
+    columns:
+      - name: merchant_name
+        data_tests:
+          - not_null
+          - unique
+
+      - name: is_suspicious
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+    

@@ -1,0 +1,79 @@
+version: 2
+
+unit_tests:
+  - name: test_fraud_by_category_aggregation
+    description: Проверяет агрегацию транзакций
+    model: mart_fraud_by_category
+    given:
+      - input: ref('stg_transactions')
+        rows:
+          - category: shopping
+            amount: 100
+            is_fraud: 0
+
+          - category: shopping
+            amount: 200
+            is_fraud: 1
+
+          - category: grocery
+            amount: 50
+            is_fraud: 0
+
+    expect:
+      rows:
+        - category: shopping
+          transaction_count: 2
+          fraud_count: 1
+          fraud_rate: 50.00
+          total_amount: 300
+          fraud_amount: 200
+
+        - category: grocery
+          transaction_count: 1
+          fraud_count: 0
+          fraud_rate: 0.00
+          total_amount: 50
+          fraud_amount: 0
+  
+  - name: test_customer_risk_profile
+    model: mart_customer_risk_profile
+
+    given:
+      - input: ref('stg_transactions')
+        rows:
+          - customer_key: customer_A
+            transaction_timestamp: '2020-01-01 10:00:00'
+            amount: 100
+            is_fraud: 1
+
+          - customer_key: customer_A
+            transaction_timestamp: '2020-01-02 10:00:00'
+            amount: 200
+            is_fraud: 0
+
+          - customer_key: customer_B
+            transaction_timestamp: '2020-01-03 10:00:00'
+            amount: 50
+            is_fraud: 0
+
+    expect:
+      rows:
+        - customer_key: customer_A
+          transaction_count: 2
+          fraud_count: 1
+          avg_amount: 150
+          total_amount: 300
+          first_transaction: '2020-01-01 10:00:00'
+          last_transaction: '2020-01-02 10:00:00'
+          fraud_rate: 50
+          risk_level: HIGH
+
+        - customer_key: customer_B
+          transaction_count: 1
+          fraud_count: 0
+          avg_amount: 50
+          total_amount: 50
+          first_transaction: '2020-01-03 10:00:00'
+          last_transaction: '2020-01-03 10:00:00'
+          fraud_rate: 0
+          risk_level: LOW
